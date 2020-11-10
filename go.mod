@@ -1,3 +1,3 @@
-module github.com/starjiang/elog
+module github.com/polevpn/elog
 
-go 1.12
+go 1.14
