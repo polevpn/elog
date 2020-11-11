@@ -18,12 +18,18 @@ const (
 	LOG_LEVEL_INFO          = 2
 	LOG_LEVEL_WARN          = 3
 	LOG_LEVEL_ERROR         = 4
-	LOG_LEVEL_NONE          = 5
+	LOG_LEVEL_FATAL         = 5
+	LOG_LEVEL_NONE          = 6
 	LOG_MAX_FILE_SIZE       = 1024 * 1024 * 1024
 	LOG_MAX_BUFFER_SIZE     = 1024 * 1024
 	LOG_MAX_ROTATE_FILE_NUM = 10
 	LOG_DEPTH_GLOBAL        = 4
 	LOG_DEPTH_HANDLER       = 3
+)
+
+const (
+	WITH_FILE_LINE    = 0
+	WITH_NO_FILE_LINE = 1
 )
 
 func init() {
@@ -32,6 +38,7 @@ func init() {
 	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,NONE],default INFO level")
 	flag.StringVar(&logger.logPath, "logPath", "", "log path,default log to current directory")
 	logger.depth = LOG_DEPTH_GLOBAL
+	logger.mode = WITH_FILE_LINE
 	go logger.flushDaemon()
 }
 
@@ -43,6 +50,7 @@ type EasyLogger struct {
 	writer      EasyLogHandler
 	depth       int
 	logPath     string
+	mode        int
 }
 
 func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer EasyLogHandler) *EasyLogger {
@@ -181,6 +189,8 @@ func getLogLevelInt(level string) int {
 		return LOG_LEVEL_WARN
 	} else if level == "ERROR" {
 		return LOG_LEVEL_ERROR
+	} else if level == "FATAL" {
+		return LOG_LEVEL_FATAL
 	} else if level == "NONE" {
 		return LOG_LEVEL_NONE
 	}
@@ -196,6 +206,8 @@ func getLogLevelString(level int) string {
 		return "WARN"
 	} else if level == LOG_LEVEL_ERROR {
 		return "ERROR"
+	} else if level == LOG_LEVEL_FATAL {
+		return "FATAL"
 	} else if level == LOG_LEVEL_NONE {
 		return "NONE"
 	}
@@ -213,21 +225,29 @@ func getAppName() string {
 
 func (el *EasyLogger) getHeader(level int, writer io.Writer) {
 
-	_, file, line, ok := runtime.Caller(el.depth)
+	if el.mode == WITH_FILE_LINE {
+		_, file, line, ok := runtime.Caller(el.depth)
 
-	if !ok {
-		file = "???"
-		line = 1
+		if !ok {
+			file = "???"
+			line = 1
+		} else {
+			slash := strings.LastIndex(file, "/")
+			if slash >= 0 {
+				file = file[slash+1:]
+			}
+		}
+		fmt.Fprintf(writer, "[%s][%s][file:%s line:%d] ", getLogLevelString(level), getTimeNowStr(), file, line)
+		if el.logToStderr {
+			fmt.Fprintf(os.Stderr, "[%s][%s][file:%s line:%d] ", getLogLevelString(level), getTimeNowStr(), file, line)
+		}
 	} else {
-		slash := strings.LastIndex(file, "/")
-		if slash >= 0 {
-			file = file[slash+1:]
+		fmt.Fprintf(writer, "[%s][%s] ", getLogLevelString(level), getTimeNowStr())
+		if el.logToStderr {
+			fmt.Fprintf(os.Stderr, "[%s][%s] ", getLogLevelString(level), getTimeNowStr())
 		}
 	}
-	fmt.Fprintf(writer, "[%s][%s][file:%s line:%d] ", getLogLevelString(level), getTimeNowStr(), file, line)
-	if el.logToStderr {
-		fmt.Fprintf(os.Stderr, "[%s][%s][file:%s line:%d] ", getLogLevelString(level), getTimeNowStr(), file, line)
-	}
+
 }
 
 func (el *EasyLogger) output(level int, args ...interface{}) {
@@ -285,6 +305,10 @@ func (el *EasyLogger) Flush() {
 	}
 }
 
+func (el *EasyLogger) SetMode(mode int) {
+	el.mode = mode
+}
+
 func (el *EasyLogger) Debug(args ...interface{}) {
 	el.output(LOG_LEVEL_DEBUG, args...)
 }
@@ -314,6 +338,18 @@ func (el *EasyLogger) Errorf(format string, args ...interface{}) {
 	el.outputf(LOG_LEVEL_ERROR, format, args...)
 }
 
+func (el *EasyLogger) Fatal(args ...interface{}) {
+	el.output(LOG_LEVEL_FATAL, args...)
+	el.Flush()
+	os.Exit(0)
+}
+
+func (el *EasyLogger) Fatalf(format string, args ...interface{}) {
+	el.outputf(LOG_LEVEL_FATAL, format, args...)
+	el.Flush()
+	os.Exit(0)
+}
+
 func (el *EasyLogger) Println(args ...interface{}) {
 	el.output(LOG_LEVEL_INFO, args...)
 }
@@ -329,6 +365,10 @@ func (el *EasyLogger) flushDaemon() {
 }
 
 var logger EasyLogger
+
+func SetMode(mode int) {
+	logger.SetMode(mode)
+}
 
 func Debug(args ...interface{}) {
 	logger.Debug(args...)
@@ -357,6 +397,13 @@ func Error(args ...interface{}) {
 }
 func Errorf(format string, args ...interface{}) {
 	logger.Errorf(format, args...)
+}
+
+func Fatal(args ...interface{}) {
+	logger.Fatal(args...)
+}
+func Fatalf(format string, args ...interface{}) {
+	logger.Fatalf(format, args...)
 }
 
 func Println(args ...interface{}) {

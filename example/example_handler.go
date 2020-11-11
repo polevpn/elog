@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/starjiang/elog"
+	"github.com/polevpn/elog"
 )
 
 type TestLogHandler struct {
