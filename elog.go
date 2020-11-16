@@ -35,7 +35,7 @@ const (
 func init() {
 	flag.BoolVar(&logger.logToStderr, "logToStderr", false, "log to stderr,default false")
 	flag.IntVar(&logger.flushTime, "logFlushTime", 3, "log flush time interval,default 3 seconds")
-	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,NONE],default INFO level")
+	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,FATAL,NONE],default INFO level")
 	flag.StringVar(&logger.logPath, "logPath", "", "log path,default log to current directory")
 	logger.depth = LOG_DEPTH_GLOBAL
 	logger.mode = WITH_FILE_LINE
