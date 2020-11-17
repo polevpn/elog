@@ -341,12 +341,14 @@ func (el *EasyLogger) Errorf(format string, args ...interface{}) {
 func (el *EasyLogger) Fatal(args ...interface{}) {
 	el.output(LOG_LEVEL_FATAL, args...)
 	el.Flush()
+	os.Stderr.Sync()
 	os.Exit(0)
 }
 
 func (el *EasyLogger) Fatalf(format string, args ...interface{}) {
 	el.outputf(LOG_LEVEL_FATAL, format, args...)
 	el.Flush()
+	os.Stderr.Sync()
 	os.Exit(0)
 }
 
