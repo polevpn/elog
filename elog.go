@@ -309,6 +309,14 @@ func (el *EasyLogger) SetMode(mode int) {
 	el.mode = mode
 }
 
+func (el *EasyLogger) SetLogLevel(level string) {
+	el.logLevel = level
+}
+
+func (el *EasyLogger) SetLogToStderr(mode bool) {
+	el.logToStderr = mode
+}
+
 func (el *EasyLogger) Debug(args ...interface{}) {
 	el.output(LOG_LEVEL_DEBUG, args...)
 }
@@ -417,6 +425,14 @@ func Printf(format string, args ...interface{}) {
 
 func GetLogger() *EasyLogger {
 	return &logger
+}
+
+func SetLogLevel(level string) {
+	logger.SetLogLevel(level)
+}
+
+func SetLogToStderr(mode bool) {
+	logger.SetLogToStderr(mode)
 }
 
 func Flush() {
