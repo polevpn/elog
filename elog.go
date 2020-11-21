@@ -415,6 +415,10 @@ func Printf(format string, args ...interface{}) {
 	logger.Printf(format, args...)
 }
 
+func GetLogger() *EasyLogger {
+	return &logger
+}
+
 func Flush() {
 	logger.Flush()
 }
