@@ -424,6 +424,7 @@ func Printf(format string, args ...interface{}) {
 }
 
 func GetLogger() *EasyLogger {
+	logger.depth = LOG_DEPTH_HANDLER
 	return &logger
 }
 
