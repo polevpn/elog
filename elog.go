@@ -223,7 +223,7 @@ func getAppName() string {
 	return appName
 }
 
-func (el *EasyLogger) getHeader(level int, writer io.Writer) {
+func (el *EasyLogger) getHeader(level int) string {
 
 	if el.mode == WITH_FILE_LINE {
 		_, file, line, ok := runtime.Caller(el.depth)
@@ -237,15 +237,10 @@ func (el *EasyLogger) getHeader(level int, writer io.Writer) {
 				file = file[slash+1:]
 			}
 		}
-		fmt.Fprintf(writer, "[%s][%s][file:%s line:%d] ", getLogLevelString(level), getTimeNowStr(), file, line)
-		if el.logToStderr {
-			fmt.Fprintf(os.Stderr, "[%s][%s][file:%s line:%d] ", getLogLevelString(level), getTimeNowStr(), file, line)
-		}
+		return fmt.Sprintf("[%s][%s][file:%s line:%d]", getLogLevelString(level), getTimeNowStr(), file, line)
+
 	} else {
-		fmt.Fprintf(writer, "[%s][%s] ", getLogLevelString(level), getTimeNowStr())
-		if el.logToStderr {
-			fmt.Fprintf(os.Stderr, "[%s][%s] ", getLogLevelString(level), getTimeNowStr())
-		}
+		return fmt.Sprintf("[%s][%s]", getLogLevelString(level), getTimeNowStr())
 	}
 
 }
@@ -264,10 +259,11 @@ func (el *EasyLogger) output(level int, args ...interface{}) {
 	if el.writer == nil {
 		el.writer = NewEasyFileHandler(el.logPath, LOG_MAX_BUFFER_SIZE) //delay init
 	}
-	el.getHeader(level, el.writer)
-	fmt.Fprintln(el.writer, args...)
+	header := el.getHeader(level)
+	body := fmt.Sprint(args...)
+	fmt.Fprintln(el.writer, header, body)
 	if el.logToStderr {
-		fmt.Fprintln(os.Stderr, args...)
+		fmt.Fprintln(os.Stderr, header, body)
 	}
 }
 
@@ -288,12 +284,11 @@ func (el *EasyLogger) outputf(level int, format string, args ...interface{}) {
 		el.writer = NewEasyFileHandler(el.logPath, LOG_MAX_BUFFER_SIZE) //delay init
 	}
 
-	el.getHeader(level, el.writer)
-	fmt.Fprintf(el.writer, format, args...)
-	el.writer.Write([]byte("\n"))
+	header := el.getHeader(level)
+	body := fmt.Sprintf(format, args...)
+	fmt.Fprintln(el.writer, header, body)
 	if el.logToStderr {
-		fmt.Fprintf(os.Stderr, format, args...)
-		os.Stderr.WriteString("\n")
+		fmt.Fprintln(os.Stderr, header, body)
 	}
 }
 

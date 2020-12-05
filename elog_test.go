@@ -1,11 +1,15 @@
-package elog
+package elog_test
 
-import "testing"
+import (
+	"testing"
 
-var tlog *EasyLogger
+	"github.com/polevpn/elog"
+)
+
+var tlog *elog.EasyLogger
 
 func TestGetLogger(t *testing.T) {
-	tlog = GetLogger()
+	tlog = elog.GetLogger()
 	defer tlog.Flush()
 
 	tlog.Info("Hello")
@@ -13,8 +17,9 @@ func TestGetLogger(t *testing.T) {
 }
 
 func TestElog(t *testing.T) {
-	defer logger.Flush()
+	defer elog.Flush()
 
-	logger.Info("Hello")
-	logger.Info("Hello")
+	elog.Info("Hello")
+	elog.Info("Hello")
+	elog.Infof("%d,%v,%s", 1, "xx", "xxxxxxx")
 }
