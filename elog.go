@@ -260,10 +260,10 @@ func (el *EasyLogger) output(level int, args ...interface{}) {
 		el.writer = NewEasyFileHandler(el.logPath, LOG_MAX_BUFFER_SIZE) //delay init
 	}
 	header := el.getHeader(level)
-	body := fmt.Sprint(args...)
-	fmt.Fprintln(el.writer, header, body)
+	body := fmt.Sprintln(args...)
+	fmt.Fprint(el.writer, header, body)
 	if el.logToStderr {
-		fmt.Fprintln(os.Stderr, header, body)
+		fmt.Fprint(os.Stderr, header, body)
 	}
 }
 
