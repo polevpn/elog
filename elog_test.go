@@ -20,8 +20,8 @@ func TestGetLogger(t *testing.T) {
 func TestElog(t *testing.T) {
 	defer elog.Flush()
 
-	elog.Info("Hello")
-	elog.Info("Hello")
+	elog.Info("Hello", "xxxxx")
+	elog.Info("Hello", "xxxxx")
 	elog.Infof("%d,%v,%s", 1, "xx", "xxxxxxx")
 }
 
