@@ -16,6 +16,5 @@ func main() {
 			elog.Info("hello", "world")
 		}()
 	}
-	elog.Fatal("xxxxxxxxxxxxxxxxxxxxxxxxxx")
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 10)
 }

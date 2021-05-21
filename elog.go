@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"strconv"
@@ -35,6 +36,7 @@ const (
 func init() {
 	flag.BoolVar(&logger.logToStderr, "logToStderr", false, "log to stderr,default false")
 	flag.IntVar(&logger.flushTime, "logFlushTime", 3, "log flush time interval,default 3 seconds")
+	flag.IntVar(&logger.logHistory, "logHistory", 7, "log history days,default 7 days")
 	flag.StringVar(&logger.logLevel, "logLevel", "INFO", "log level[DEBUG,INFO,WARN,ERROR,FATAL,NONE],default INFO level")
 	flag.StringVar(&logger.logPath, "logPath", "", "log path,default log to current directory")
 	logger.depth = LOG_DEPTH_GLOBAL
@@ -46,6 +48,7 @@ type EasyLogger struct {
 	mutex       sync.Mutex
 	logToStderr bool
 	flushTime   int
+	logHistory  int
 	logLevel    string
 	writer      EasyLogHandler
 	depth       int
@@ -300,6 +303,38 @@ func (el *EasyLogger) Flush() {
 	}
 }
 
+func (el *EasyLogger) removeHistory() error {
+	var err error
+	logPath := el.logPath
+	if logPath == "" {
+		logPath, err = os.Getwd()
+		if err != nil {
+			return err
+		}
+	}
+	files, err := ioutil.ReadDir(logPath)
+	if err != nil {
+		return err
+	}
+
+	appName := getAppName()
+
+	logPrefix := appName + "-"
+
+	dateHistory := time.Now().AddDate(0, 0, 0-el.logHistory).Format("2006-01-02")
+
+	logHistoryPrefix := logPrefix + dateHistory
+
+	for _, v := range files {
+		if strings.HasPrefix(v.Name(), logPrefix) && strings.Contains(v.Name(), ".log") {
+			if strings.Compare(v.Name(), logHistoryPrefix) < 0 {
+				os.Remove(logPath + string(os.PathSeparator) + v.Name())
+			}
+		}
+	}
+	return nil
+}
+
 func (el *EasyLogger) SetMode(mode int) {
 	el.mode = mode
 }
@@ -364,8 +399,9 @@ func (el *EasyLogger) Printf(format string, args ...interface{}) {
 }
 
 func (el *EasyLogger) flushDaemon() {
-	for _ = range time.NewTicker(time.Second * time.Duration(el.flushTime)).C {
+	for range time.NewTicker(time.Second * time.Duration(el.flushTime)).C {
 		el.Flush()
+		el.removeHistory()
 	}
 }
 
