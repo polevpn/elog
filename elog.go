@@ -347,6 +347,30 @@ func (el *EasyLogger) SetLogToStderr(mode bool) {
 	el.logToStderr = mode
 }
 
+func (el *EasyLogger) SetLogPath(logPath string) {
+	el.logPath = logPath
+}
+
+func (el *EasyLogger) GetLogPath() string {
+	return el.logPath
+}
+
+func (el *EasyLogger) GetLogLevel() string {
+	return el.logLevel
+}
+
+func (el *EasyLogger) GetMode() int {
+	return el.mode
+}
+
+func (el *EasyLogger) GetFlushTime() int {
+	return el.flushTime
+}
+
+func (el *EasyLogger) GetLogHistory() int {
+	return el.logHistory
+}
+
 func (el *EasyLogger) Debug(args ...interface{}) {
 	el.output(LOG_LEVEL_DEBUG, args...)
 }
@@ -407,10 +431,6 @@ func (el *EasyLogger) flushDaemon() {
 
 var logger EasyLogger
 
-func SetMode(mode int) {
-	logger.SetMode(mode)
-}
-
 func Debug(args ...interface{}) {
 	logger.Debug(args...)
 }
@@ -465,6 +485,34 @@ func SetLogLevel(level string) {
 
 func SetLogToStderr(mode bool) {
 	logger.SetLogToStderr(mode)
+}
+
+func SetMode(mode int) {
+	logger.SetMode(mode)
+}
+
+func SetLogPath(logPath string) {
+	logger.SetLogPath(logPath)
+}
+
+func GetLogPath() string {
+	return logger.logPath
+}
+
+func GetLogLevel() string {
+	return logger.logLevel
+}
+
+func GetMode() int {
+	return logger.mode
+}
+
+func GetFlushTime() int {
+	return logger.flushTime
+}
+
+func GetLogHistory() int {
+	return logger.logHistory
 }
 
 func Flush() {
