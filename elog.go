@@ -449,7 +449,7 @@ func Warn(args ...interface{}) {
 	logger.Warn(args...)
 
 }
-func Warningf(format string, args ...interface{}) {
+func Warnf(format string, args ...interface{}) {
 	logger.Warnf(format, args...)
 }
 
