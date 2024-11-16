@@ -41,19 +41,21 @@ func init() {
 	flag.StringVar(&logger.logPath, "logPath", "", "log path,default log to current directory")
 	logger.depth = LOG_DEPTH_GLOBAL
 	logger.mode = WITH_FILE_LINE
+	logger.logBufferSize = LOG_MAX_BUFFER_SIZE
 	go logger.flushDaemon()
 }
 
 type EasyLogger struct {
-	mutex       sync.Mutex
-	logToStderr bool
-	flushTime   int
-	logHistory  int
-	logLevel    string
-	writer      EasyLogHandler
-	depth       int
-	logPath     string
-	mode        int
+	mutex         sync.Mutex
+	logToStderr   bool
+	flushTime     int
+	logHistory    int
+	logLevel      string
+	writer        EasyLogHandler
+	depth         int
+	logPath       string
+	logBufferSize int
+	mode          int
 }
 
 func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer EasyLogHandler) *EasyLogger {
@@ -64,6 +66,7 @@ func NewEasyLogger(logLevel string, logToStderr bool, flushTime int, writer Easy
 	logger.flushTime = flushTime
 	logger.writer = writer
 	logger.depth = LOG_DEPTH_HANDLER
+	logger.logBufferSize = LOG_MAX_BUFFER_SIZE
 	go logger.flushDaemon()
 	return logger
 }
@@ -260,7 +263,7 @@ func (el *EasyLogger) output(level int, args ...interface{}) {
 	el.mutex.Lock()
 	defer el.mutex.Unlock()
 	if el.writer == nil {
-		el.writer = NewEasyFileHandler(el.logPath, LOG_MAX_BUFFER_SIZE) //delay init
+		el.writer = NewEasyFileHandler(el.logPath, el.logBufferSize) //delay init
 	}
 	header := el.getHeader(level)
 	body := fmt.Sprint(args...)
@@ -343,6 +346,10 @@ func (el *EasyLogger) SetLogLevel(level string) {
 	el.logLevel = level
 }
 
+func (el *EasyLogger) SetLogBufferSize(size int) {
+	el.logBufferSize = size
+}
+
 func (el *EasyLogger) SetLogToStderr(mode bool) {
 	el.logToStderr = mode
 }
@@ -357,6 +364,10 @@ func (el *EasyLogger) GetLogPath() string {
 
 func (el *EasyLogger) GetLogLevel() string {
 	return el.logLevel
+}
+
+func (el *EasyLogger) GetLogBufferSize() int {
+	return el.logBufferSize
 }
 
 func (el *EasyLogger) GetMode() int {
@@ -479,6 +490,10 @@ func GetLogger() *EasyLogger {
 	return &logger
 }
 
+func SetLogBufferSize(size int) {
+	logger.SetLogBufferSize(size)
+}
+
 func SetLogLevel(level string) {
 	logger.SetLogLevel(level)
 }
@@ -496,23 +511,27 @@ func SetLogPath(logPath string) {
 }
 
 func GetLogPath() string {
-	return logger.logPath
+	return logger.GetLogPath()
 }
 
 func GetLogLevel() string {
-	return logger.logLevel
+	return logger.GetLogLevel()
+}
+
+func GetLogBufferSize() int {
+	return logger.GetLogBufferSize()
 }
 
 func GetMode() int {
-	return logger.mode
+	return logger.GetMode()
 }
 
 func GetFlushTime() int {
-	return logger.flushTime
+	return logger.GetFlushTime()
 }
 
 func GetLogHistory() int {
-	return logger.logHistory
+	return logger.GetLogHistory()
 }
 
 func Flush() {
