@@ -52,6 +52,7 @@ type EasyLogger struct {
 	logHistory    int
 	logLevel      string
 	writer        EasyLogHandler
+	callback      io.Writer
 	depth         int
 	logPath       string
 	logBufferSize int
@@ -271,6 +272,10 @@ func (el *EasyLogger) output(level int, args ...interface{}) {
 	if el.logToStderr {
 		fmt.Fprintln(os.Stderr, header, body)
 	}
+
+	if el.callback != nil {
+		fmt.Fprintln(el.callback, header, body)
+	}
 }
 
 func (el *EasyLogger) outputf(level int, format string, args ...interface{}) {
@@ -344,6 +349,10 @@ func (el *EasyLogger) SetMode(mode int) {
 
 func (el *EasyLogger) SetLogLevel(level string) {
 	el.logLevel = level
+}
+
+func (el *EasyLogger) SetCallback(callback io.Writer) {
+	el.callback = callback
 }
 
 func (el *EasyLogger) SetLogBufferSize(size int) {
@@ -496,6 +505,10 @@ func SetLogBufferSize(size int) {
 
 func SetLogLevel(level string) {
 	logger.SetLogLevel(level)
+}
+
+func SetCallback(callback io.Writer) {
+	logger.SetCallback(callback)
 }
 
 func SetLogToStderr(mode bool) {
