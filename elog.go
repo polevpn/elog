@@ -301,6 +301,9 @@ func (el *EasyLogger) outputf(level int, format string, args ...interface{}) {
 	if el.logToStderr {
 		fmt.Fprintln(os.Stderr, header, body)
 	}
+	if el.callback != nil {
+		fmt.Fprintln(el.callback, header, body)
+	}
 }
 
 func (el *EasyLogger) Flush() {
